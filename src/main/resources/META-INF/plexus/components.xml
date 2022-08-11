@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component-set>
+	<components>
+		<component>
+			<role>org.apache.maven.plugins.assembly.archive.phase.AssemblyArchiverPhase
+			</role>
+			<role-hint>jar-file-sets</role-hint>
+			<implementation>org.hellotoy.maven.plugins.assembly.archive.phase.JarFileSetAssemblyPhase
+            </implementation>
+			<description />
+			<isolated-realm>false</isolated-realm>
+		</component>
+	</components>
+</component-set>
