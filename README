@@ -1,0 +1,20 @@
+1.maven引入plugin
+    <plugin>
+        <groupId>org.hellotoy.maven.plugins</groupId>
+        <artifactId>hellotoy-assembly-plugin</artifactId>
+        <version>1.0.0</version>
+        <executions>
+            <execution>
+                <id>make-zip</id>
+                <phase>package</phase>
+                <goals>
+                    <goal>edo</goal>
+                </goals>
+            </execution>
+        </executions>
+    </plugin>
+2.执行package
+3.生成${artifact.artifactId}-${artifact.baseVersion}-toy.tar.gz
+4.解压${artifact.artifactId}-${artifact.baseVersion}-toy.tar.gz
+5.cd bin 执行启动或关闭命令
+
