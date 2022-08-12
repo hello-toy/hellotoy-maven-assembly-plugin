@@ -1,0 +1,10 @@
+#!/bin/bash
+
+export EX_JAVA_OPTS="-Xloggc:/app/log/gc.log --XX:MaxRAMPercentage=85.0 -XX:NewRatio=3"
+
+APP=("app")
+
+app=(
+     "/app/gts-radar-recv-toy/bin/appStart.sh"    # start command
+     "APP_NAME=gts-radar-recv"       # process key
+    )

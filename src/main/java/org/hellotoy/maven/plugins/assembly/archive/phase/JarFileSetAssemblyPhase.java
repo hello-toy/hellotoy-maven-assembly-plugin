@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -37,7 +38,6 @@ public class JarFileSetAssemblyPhase extends AbstractLogEnabled implements Assem
 	public void execute(Assembly assembly, Archiver archiver, AssemblerConfigurationSource configSource)
 			throws ArchiveCreationException, AssemblyFormattingException, InvalidAssemblerConfigurationException,
 			DependencyResolutionException {
-		this.getLogger().info("using jar file set process=========");
 		final List<FileSet> fileSets = assembly.getFileSets();
 		if ((fileSets != null) && !fileSets.isEmpty()) {
 			for (FileSet fs : fileSets) {
@@ -49,35 +49,58 @@ public class JarFileSetAssemblyPhase extends AbstractLogEnabled implements Assem
 		}
 	}
 
+
+	private String detectOutPath(AssemblerConfigurationSource configSource, FileSet fs){
+		String outPath = null;
+		if(fs.getDirectory().startsWith("jar://sources")){
+			outPath = configSource.getBasedir().getPath();
+		} else {
+			outPath = configSource.getTemporaryRootDirectory().getAbsolutePath();
+		}
+		if(!outPath.endsWith("/")) {
+			outPath=outPath+"/";
+		}
+		File path = new File(outPath);
+		if (!path.exists()) {
+			path.mkdirs();
+		}
+		return outPath;
+	}
+
+	private void createParentPath(String path){
+		File file = new File(path).getParentFile();
+		if(!file.exists()) {
+			file.mkdirs();
+		}
+	}
+
+
 	private void reDefineJarProtocol(Archiver archiver, AssemblerConfigurationSource configSource, FileSet fs) {
 		if (fs.getDirectory().startsWith("jar://")) {
 			JarFile jarFile = null;
 			try {
 				String loadPath = fs.getDirectory().substring("jar://".length());
 				String jarPath = this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile();
-				String dir = configSource.getTemporaryRootDirectory().getAbsolutePath();
-				if(!dir.endsWith("/")) {
-					dir=dir+"/";
-				}
+				String outFolder = this.detectOutPath(configSource,fs);
 				jarFile = new JarFile(jarPath);
 				Enumeration<JarEntry> entrys = jarFile.entries();
 				while (entrys.hasMoreElements()) {
 					JarEntry jar = entrys.nextElement();
 					String name = jar.getName();
-					if (name.startsWith(loadPath+"/")&&name.length()>loadPath.length()+1) {
+					if (name.startsWith(loadPath+"/") && name.length()> loadPath.length()+1) {
 						InputStream in = StringUtils.class.getClassLoader().getResourceAsStream(name);
-						File parent = new File(dir + name).getParentFile();
-						if (!parent.exists()) {
-							parent.mkdirs();
-						}
-						String dirFilePath = dir + name;
-						OutputStream out = new FileOutputStream(dirFilePath);
-						IOUtils.copy(in, out);
+						String outFile = outFolder+name;
+						outFile = outFile.replace(loadPath,fs.getOutputDirectory());
+						this.createParentPath(outFile);
+						OutputStream out = new FileOutputStream(outFile);
+						String sourceValue = IOUtils.toString(in,"UTF-8");
+						sourceValue = replaceDynamicValues(configSource, sourceValue);
+						IOUtils.write(sourceValue,out,"UTF-8");
 						IOUtils.closeQuietly(in);
 						IOUtils.closeQuietly(out);
 					}
 				}
-				fs.setDirectory(dir+loadPath);
+				fs.setDirectory(outFolder+loadPath);
 				jarFile.close();
 				archiver.getDestFile();
 			} catch (Exception e) {
@@ -88,6 +111,18 @@ public class JarFileSetAssemblyPhase extends AbstractLogEnabled implements Assem
 				}
 			}
 		}
+	}
+
+	private String replaceDynamicValues(AssemblerConfigurationSource configSource, String sourceValue) {
+		configSource.getAdditionalProperties().entrySet();
+		for(Map.Entry<Object, Object> entry : configSource.getAdditionalProperties().entrySet()){
+			String key = String.valueOf(entry.getKey());
+			String value = String.valueOf(entry.getValue());
+			sourceValue = sourceValue.replaceAll("\\$\\{"+key+"\\}",value);
+		}
+		this.getLogger().info(configSource.getFinalName()+"===============");
+		sourceValue = sourceValue.replaceAll("\\$\\{finalName\\}",configSource.getFinalName());
+		return sourceValue;
 	}
 
 }

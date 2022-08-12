@@ -67,6 +67,10 @@
             <lineEnding>dos</lineEnding>
             <filtered>true</filtered>
         </fileSet>
+        <fileSet>
+            <directory>jar://sources/docker</directory>
+            <outputDirectory></outputDirectory>
+        </fileSet>
     </fileSets>
 
     <dependencySets>

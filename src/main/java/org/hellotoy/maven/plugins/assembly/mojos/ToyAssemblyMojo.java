@@ -9,7 +9,6 @@ import org.apache.maven.plugins.assembly.mojos.SingleAssemblyMojo;
 @Mojo( name = "edo", inheritByDefault = false, requiresDependencyResolution = ResolutionScope.TEST,
 threadSafe = true )
 public class ToyAssemblyMojo extends SingleAssemblyMojo{
-	
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
