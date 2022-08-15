@@ -1,3 +1,4 @@
+应用该插件打包可以自动添加启动、停止脚本，并会自动生成Dockerfile,在容器启动时添加-e toy_param_server_port=8080 可替换容器端口，其他参数覆盖只需要添加-e toy_param_*_*=abc形式即可覆盖容器应用配置文件
 1.maven引入plugin
     <plugin>
         <groupId>org.hellotoy.maven.plugins</groupId>
@@ -11,6 +12,11 @@
                     <goal>edo</goal>
                 </goals>
             </execution>
+            <configuration>
+            	<additionalProperties>
+            	    <baseImage>${docker基础镜像:版本}</baseImage>
+            	</additionalProperties>
+            </configuration>
         </executions>
     </plugin>
 2.执行package
