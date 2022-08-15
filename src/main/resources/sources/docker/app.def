@@ -8,3 +8,19 @@ app=(
      "/app/gts-radar-recv-toy/bin/appStart.sh"    # start command
      "APP_NAME=gts-radar-recv"       # process key
     )
+
+#从环境变量中获取配置信息，并将信息写入到配置文件中 eg:itracing_trace_xxx_yyy=2 =>xxx.yyy=2
+prefix="toy_param_"
+properties_path=/app/${finalName}-toy/conf/application.properties
+IFS=$'\n'
+echo "#from system env \n">>$properties_path
+for e in `env | grep -i ^"$prefix"`
+do
+   var=${e#*$prefix}
+   s=`echo "$var" | grep -Eo "_[0-9]+_"`
+   s=${s/_/[}
+   s=${s/_/]\.}
+   var=${var//_[0-9]_/$s}
+   var=${var//_/\.}
+  echo $var>>$properties_path
+done
